@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 #
-# runsvm.py
-# 
+# makedocs.py
+#
 #    Runs the Sedona VM in current directory with supplied options (or defaults).
 #
 # Author:    Elizabeth McKenney
@@ -55,16 +55,25 @@ def main():
 
   buildsrcdocs = env.sedonacExe + " -doc -outDir " + env.build + " " + env.kits
   docOut = os.path.join(env.build, "doc")
+  docAPI = os.path.join(env.build, "api")
+  docAPIOut = os.path.join(docOut, "api")
+  # copy static content in build/doc
   fileutil.cpdir(env.doc, docOut)
   buildpubdocs = env.sedonacExe + " -doc " + os.path.join(docOut, "toc.xml")
 
   #print "\n\n   Executing cmd = { " + cmd + " }\n\n"
   
+  # Generate source (API) documentation
   if subprocess.call(buildsrcdocs, shell=True):
     raise Exception, "\n *** Failed:\n" + buildsrcdocs
-
+  # move api content in build/doc/api
+  fileutil.cpdir(docAPI, docAPIOut)
+  shutil.rmtree(docAPI)
+  # Generate static documentation (old-stype HTML pages)
   if subprocess.call(buildpubdocs, shell=True):
     raise Exception, "\n *** Failed:\n" + buildpubdocs
+  # move api index in build/doc/api
+  shutil.move(os.path.join(docOut, "api.html"), os.path.join(docAPIOut, "api.html"))
 
 
 # 
